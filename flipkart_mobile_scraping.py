@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
-from iphones_list import phones
+from phones_list import phones
 import re
 
 # URL of the PHP page you want to scrape
