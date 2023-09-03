@@ -7,9 +7,14 @@ import re
 # URL of the PHP page you want to scrape
 
 def generate_csv(response):
+    
 
     # Check if the request was successful (status code 200)
     if response.status_code == 200:
+        
+        specs = []
+        features = []
+        
         # Parse the HTML content of the page using BeautifulSoup
         soup = BeautifulSoup(response.text, 'html.parser')
         # Save the page HTML to a file
@@ -34,12 +39,11 @@ def generate_csv(response):
         csv_file = open(title.strip()+'.csv', 'w', newline='', encoding='utf-8')
         csv_writer = csv.writer(csv_file)
         
-        csv_writer.writerow([title])
-        
         # To extract the price
         price_tag = soup.find(string='₹')
         price = price_tag.parent.text.strip()
-        csv_writer.writerow(['Price: ',price])
+        specs.append('Price')
+        features.append(price)
         
         #To all all available colors
         if soup.find(string='Color'):
@@ -49,7 +53,8 @@ def generate_csv(response):
             for color in ind_colors:
                 all_colors.append(color.text.strip())
             
-            csv_writer.writerow(['Available colors: ',all_colors])
+            specs.append('Available colors')
+            features.append(all_colors)
         
         # to add all available rams
         if soup.find(string='RAM'):
@@ -60,25 +65,27 @@ def generate_csv(response):
             for ram in ind_rams:
                 all_rams.append(ram.text.strip())
                 
-            csv_writer.writerow(['Available RAMS: ',all_rams])
+            specs.append('Available RAMS')
+            features.append(all_rams)
             
         # To all all available Storage options
         if soup.find(string='Storage'):
             storage_tag = soup.find(string='Storage').parent.parent
             ind_storages = storage_tag.find_all('div',class_='_3Oikkn _3_ezix _2KarXJ')
-            all_storage = []
+            all_storages = []
             
             for storage in ind_storages:
-                all_storage.append(storage.text.strip())
+                all_storages.append(storage.text.strip())
                 
-            csv_writer.writerow(['Available Storages: ',all_storage])
+            specs.append('Available Storages')
+            features.append(all_storages)
         
         # Find all the feature sections
         feature_sections = soup.find_all('div', class_='flxcaE')
         
         for feature_section in feature_sections:
             feature_heading = feature_section.text.strip()
-            csv_writer.writerow([feature_heading])
+            #csv_writer.writerow([feature_heading])
             
             #print(feature_section.parent)
             # Find the table within the feature section
@@ -89,12 +96,13 @@ def generate_csv(response):
             for row in rows:
                 # Find the specification (first <td> element)
                 spec = row.find('td', class_='_1hKmbr col col-3-12').text.strip()
-
+                specs.append(spec)
                 # Find the feature (text inside the <li> element)
                 feature = row.find('li', class_='_21lJbe').text.strip()
-
+                features.append(feature)
                 # Write the data to the CSV file
-                csv_writer.writerow([spec, feature])
+        csv_writer.writerow(specs)
+        csv_writer.writerow(features)
         
     else:
         print(f"Failed to retrieve the page. Status code: {response.status_code}")
